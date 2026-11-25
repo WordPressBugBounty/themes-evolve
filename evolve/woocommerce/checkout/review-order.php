@@ -10,127 +10,133 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see https://docs.woocommerce.com/document/template-structure/
+ * evolve: WooCommerce 11.2.2's template as a Bootstrap table with a product thumbnail column and evolve's
+ * "Cart Subtotal" / "Order Total" labels.
+ *
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 5.2.0
+ * @version 11.2.2
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-
 <table class="shop_table woocommerce-checkout-review-order-table table">
-    <thead>
-    <tr>
-        <th colspan="2" class="product-name" scope="col"><?php esc_html_e( 'Product', 'evolve' ); ?></th>
-        <th class="product-total" scope="col"><?php esc_html_e( 'Subtotal', 'evolve' ); ?></th>
-    </tr>
-    </thead>
-    <tbody>
+	<thead>
+		<tr>
+			<th colspan="2" class="product-name" scope="col"><?php esc_html_e( 'Product', 'evolve' ); ?></th>
+			<th class="product-total" scope="col"><?php esc_html_e( 'Subtotal', 'evolve' ); ?></th>
+		</tr>
+	</thead>
+	<tbody>
+		<?php
+		do_action( 'woocommerce_review_order_before_cart_contents' );
 
-	<?php
-	do_action( 'woocommerce_review_order_before_cart_contents' );
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
-	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-		$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+			/**
+			 * Filter whether this cart item is visible in the checkout review order table.
+			 *
+			 * @since 2.1.0
+			 * @param bool   $visible       Whether the cart item is visible. Default true.
+			 * @param array  $cart_item     The cart item data.
+			 * @param string $cart_item_key The cart item key.
+			 */
+			$visible = apply_filters( 'woocommerce_checkout_cart_item_visible', true, $cart_item, $cart_item_key );
 
-		if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_checkout_cart_item_visible', true, $cart_item, $cart_item_key ) ) { ?>
+			if ( $_product instanceof WC_Product && $_product->exists() && $cart_item['quantity'] > 0 && $visible ) {
+				$cart_item_name = evolve_wc_cart_item_name( $cart_item, $_product );
+				/** This filter is documented in woocommerce/templates/cart/cart.php. */
+				$product_name = apply_filters( 'woocommerce_cart_item_name', $cart_item_name, $cart_item, $cart_item_key );
+				/** This filter is documented in woocommerce/templates/cart/cart.php. */
+				$thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+				?>
+				<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key ) ); ?>">
+					<th scope="row" class="product-name">
+						<?php
+						if ( ! $_product->is_visible() ) {
+							echo $thumbnail; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						} else {
+							printf( '<a class="product-thumbnail" href="%s">%s</a>', esc_url( $_product->get_permalink() ), $thumbnail ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						}
+						?>
+					</th>
+					<td class="product-name-link">
+						<?php echo wp_kses_post( $product_name ) . '&nbsp;'; ?>
+						<?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '&times;&nbsp;%s', esc_html( $cart_item['quantity'] ) ) . '</strong>', $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo wc_get_formatted_cart_item_data( $cart_item, false, $cart_item_name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</td>
+					<td class="product-total">
+						<?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</td>
+				</tr>
+				<?php
+			}
+		}
 
-            <tr class="<?php echo esc_attr( apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key ) ); ?>">
-                <th scope="row" class="product-name">
+		do_action( 'woocommerce_review_order_after_cart_contents' );
+		?>
+	</tbody>
+	<tfoot>
 
-					<?php $thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+		<tr class="cart-subtotal">
+			<th colspan="2"><?php esc_html_e( 'Cart Subtotal', 'evolve' ); ?></th>
+			<td><?php wc_cart_totals_subtotal_html(); ?></td>
+		</tr>
 
-					if ( ! $_product->is_visible() ) {
-						echo $thumbnail;
-					} else {
-						printf( '<a class="product-thumbnail" href="%s">%s</a>', $_product->get_permalink(), $thumbnail );
-					} ?>
+		<?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
+			<tr class="cart-discount coupon-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
+				<th colspan="2"><?php wc_cart_totals_coupon_label( $coupon ); ?></th>
+				<td><?php wc_cart_totals_coupon_html( $coupon ); ?></td>
+			</tr>
+		<?php endforeach; ?>
 
-                </th>
-                <td class="product-name-link">
-                    <?php echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key ) ) . '&nbsp;'; ?>
-                    <?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '&times;&nbsp;%s', $cart_item['quantity'] ) . '</strong>', $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                </td>
-                <td class="product-total">
+		<?php if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) : ?>
 
-					<?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); ?>
+			<?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
 
-                </td>
-            </tr>
+			<?php wc_cart_totals_shipping_html(); ?>
 
-		<?php }
-	}
+			<?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
 
-	do_action( 'woocommerce_review_order_after_cart_contents' ); ?>
+		<?php endif; ?>
 
-    </tbody>
-    <tfoot>
+		<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
+			<tr class="fee">
+				<th colspan="2"><?php echo esc_html( $fee->name ); ?></th>
+				<td><?php wc_cart_totals_fee_html( $fee ); ?></td>
+			</tr>
+		<?php endforeach; ?>
 
-    <tr class="cart-subtotal">
-        <th colspan="2"><?php esc_html_e( 'Cart Subtotal', 'evolve' ); ?></th>
-        <td><?php wc_cart_totals_subtotal_html(); ?></td>
-    </tr>
+		<?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
+			<?php if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) : ?>
+				<?php foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
+					<tr class="tax-rate tax-rate-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
+						<th colspan="2"><?php echo esc_html( $tax->label ); ?></th>
+						<td><?php echo wp_kses_post( $tax->formatted_amount ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			<?php else : ?>
+				<tr class="tax-total">
+					<th colspan="2"><?php echo esc_html( WC()->countries->tax_or_vat() ); ?></th>
+					<td><?php wc_cart_totals_taxes_total_html(); ?></td>
+				</tr>
+			<?php endif; ?>
+		<?php endif; ?>
 
-	<?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
+		<?php do_action( 'woocommerce_review_order_before_order_total' ); ?>
 
-        <tr class="cart-discount coupon-<?php echo esc_attr( $code ); ?>">
-            <th colspan="2"><?php wc_cart_totals_coupon_label( $coupon ); ?></th>
-            <td><?php wc_cart_totals_coupon_html( $coupon ); ?></td>
-        </tr>
+		<tr class="order-total">
+			<th colspan="2"><?php esc_html_e( 'Order Total', 'evolve' ); ?></th>
+			<td><?php wc_cart_totals_order_total_html(); ?></td>
+		</tr>
 
-	<?php endforeach;
+		<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
 
-	if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) :
-
-		do_action( 'woocommerce_review_order_before_shipping' );
-
-		wc_cart_totals_shipping_html();
-
-		do_action( 'woocommerce_review_order_after_shipping' );
-
-	endif;
-
-	foreach ( WC()->cart->get_fees() as $fee ) : ?>
-
-        <tr class="fee">
-            <th colspan="2"><?php echo esc_html( $fee->name ); ?></th>
-            <td><?php wc_cart_totals_fee_html( $fee ); ?></td>
-        </tr>
-
-	<?php endforeach;
-
-	if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) :
-		if ( get_option( 'woocommerce_tax_total_display' ) === 'itemized' ) :
-			foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : ?>
-
-                <tr class="tax-rate tax-rate-<?php echo sanitize_title( $code ); ?>">
-                    <th colspan="2"><?php echo esc_html( $tax->label ); ?></th>
-                    <td><?php echo wp_kses_post( $tax->formatted_amount ); ?></td>
-                </tr>
-
-			<?php endforeach;
-		else : ?>
-
-            <tr class="tax-total">
-                <th colspan="2"><?php echo esc_html( WC()->countries->tax_or_vat() ); ?></th>
-                <td><?php echo wc_price( WC()->cart->get_taxes_total() ); ?></td>
-            </tr>
-
-		<?php endif;
-	endif;
-
-	do_action( 'woocommerce_review_order_before_order_total' ); ?>
-
-    <tr class="order-total">
-        <th colspan="2"><?php esc_html_e( 'Order Total', 'evolve' ); ?></th>
-        <td><?php wc_cart_totals_order_total_html(); ?></td>
-    </tr>
-
-	<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
-
-    </tfoot>
+	</tfoot>
 </table>
+<?php
+// evolve: this closing tag ends WooCommerce's #order_review box early, so the payment section follows outside it,
+// which is what evolve's checkout layout was built on. To be revisited with the checkout code in inc/woocommerce-support.php.
+?>
 </div><!-- .table-responsive-lg -->
-
-

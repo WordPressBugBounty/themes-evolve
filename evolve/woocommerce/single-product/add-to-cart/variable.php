@@ -10,63 +10,82 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see https://docs.woocommerce.com/document/template-structure/
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 6.1.0
+ * @version 11.1.0
+ *
+ * evolve: Bootstrap alert, responsive table, form-control selects, button-style Clear link.
  */
-
 
 defined( 'ABSPATH' ) || exit;
 
 global $product;
 
-$attribute_keys = array_keys( $attributes );
+$attribute_keys  = array_keys( $attributes );
 $variations_json = wp_json_encode( $available_variations );
 $variations_attr = function_exists( 'wc_esc_json' ) ? wc_esc_json( $variations_json ) : _wp_specialchars( $variations_json, ENT_QUOTES, 'UTF-8', true );
 
+/**
+ * Fires before the add to cart form of a variable product.
+ *
+ * @since 1.2.1
+ */
 do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 
-    <form class="variations_form cart"
-          action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>"
-          method="post" enctype='multipart/form-data' data-product_id="<?php echo absint( $product->get_id() ); ?>"
-          data-product_variations="<?php echo $variations_attr; // WPCS: XSS ok. ?>">
-		<?php do_action( 'woocommerce_before_variations_form' ); ?>
+<form class="variations_form cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>" method="post" enctype='multipart/form-data' data-product_id="<?php echo absint( $product->get_id() ); ?>" data-product_variations="<?php echo $variations_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped, WooCommerce.Commenting.CommentHooks.MissingHookComment -- $variations_attr is already escaped for an HTML attribute by wc_esc_json() or _wp_specialchars(). A hook docblock for woocommerce_add_to_cart_form_action cannot end on the line above this inline call without leaving content before a closing PHP tag. ?>">
+	<?php
+	/**
+	 * Fires at the top of the variations form, inside the form element.
+	 *
+	 * @since 2.4.0
+	 */
+	do_action( 'woocommerce_before_variations_form' );
+	?>
 
-		<?php if ( empty( $available_variations ) && false !== $available_variations ) :
-			?>
-            <p class="stock out-of-stock alert alert-warning"
-               role="alert"><?php esc_html_e( 'This product is currently out of stock and unavailable.', 'evolve' ); ?></p>
-		<?php else : ?>
-            <div class="table-responsive-lg">
-                <table class="variations mb-4">
-                    <tbody>
-					<?php foreach ( $attributes as $attribute_name => $options ) : ?>
-                        <tr>
-                            <td class="label"><label
-                                        for="<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>"><?php echo wc_attribute_label( $attribute_name ); // WPCS: XSS ok. ?></label>
-                            </td>
-                            <td class="value">
-								<?php
-								wc_dropdown_variation_attribute_options( array(
-									'options'   => $options,
-									'attribute' => $attribute_name,
-									'product'   => $product,
-									'class'     => 'form-control'
-								) );
-								echo end( $attribute_keys ) === $attribute_name ? wp_kses_post( apply_filters( 'woocommerce_reset_variations_link', '<a class="btn btn-sm mt-3 reset_variations" href="#">' . esc_html__( 'Clear', 'evolve' ) . '</a>' ) ) : '';
-								?>
-                            </td>
-                        </tr>
-					<?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+	<?php if ( empty( $available_variations ) && false !== $available_variations ) : ?>
+		<p class="stock out-of-stock alert alert-warning" role="alert"><?php echo esc_html( apply_filters( 'woocommerce_out_of_stock_message', __( 'This product is currently out of stock and unavailable.', 'evolve' ) ) ); ?></p>
+	<?php else : ?>
+		<div class="table-responsive-lg">
+		<table class="variations mb-4" role="presentation">
+			<tbody>
+				<?php foreach ( $attributes as $attribute_name => $options ) : ?>
+					<tr>
+						<td class="label"><label for="<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>"><?php echo wc_attribute_label( $attribute_name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute names are sanitized on save; the filter output may carry markup by design. ?></label></td>
+						<td class="value">
+							<?php
+								wc_dropdown_variation_attribute_options(
+									array(
+										'options'   => $options,
+										'attribute' => $attribute_name,
+										'product'   => $product,
+										'class'     => 'form-control',
+									)
+								);
+								/**
+								 * Filters the reset variation button.
+								 *
+								 * @since 2.5.0
+								 *
+								 * @param string  $button The reset variation button HTML.
+								 */
+								echo end( $attribute_keys ) === $attribute_name ? wp_kses_post( apply_filters( 'woocommerce_reset_variations_link', '<a class="btn btn-sm mt-3 reset_variations" href="#" aria-label="' . esc_attr__( 'Clear options', 'evolve' ) . '">' . esc_html__( 'Clear', 'evolve' ) . '</a>' ) ) : '';
+							?>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		</div>
+		<div class="reset_variations_alert screen-reader-text" role="alert" aria-live="polite" aria-relevant="all"></div>
+		<?php // evolve: no wc-product-gallery-default-template; evolve uses its own image carousel (product-image.php). ?>
+		<?php do_action( 'woocommerce_after_variations_table' ); ?>
 
-
-            <div class="single_variation_wrap">
-				<?php
+		<div class="single_variation_wrap">
+			<?php
 				/**
 				 * Hook: woocommerce_before_single_variation.
+				 *
+				 * @since 2.1.0
 				 */
 				do_action( 'woocommerce_before_single_variation' );
 
@@ -81,14 +100,28 @@ do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 
 				/**
 				 * Hook: woocommerce_after_single_variation.
+				 *
+				 * @since 2.1.0
 				 */
 				do_action( 'woocommerce_after_single_variation' );
-				?>
-            </div>
-		<?php endif; ?>
+			?>
+		</div>
+	<?php endif; ?>
 
-		<?php do_action( 'woocommerce_after_variations_form' ); ?>
-    </form>
+	<?php
+	/**
+	 * Fires at the bottom of the variations form, inside the form element.
+	 *
+	 * @since 2.4.0
+	 */
+	do_action( 'woocommerce_after_variations_form' );
+	?>
+</form>
 
 <?php
+/**
+ * Fires after the add to cart form of a variable product.
+ *
+ * @since 1.2.1
+ */
 do_action( 'woocommerce_after_add_to_cart_form' );

@@ -79,14 +79,14 @@ if ( ! class_exists( 'Evolve_Admin' ) ) {
 
             <h1 class="wp-heading-inline">
 				<?php esc_html_e( 'About', 'evolve' ); ?>
-				<?php echo $evolve_theme_name; ?>
-				<?php printf( '%s', $evolve_theme_version ); ?>
+				<?php echo esc_html( $evolve_theme_name ); ?>
+				<?php echo esc_html( $evolve_theme_version ); ?>
             </h1>
 
             <div class="theme-info-container">
                 <div class="theme-info-row">
                     <div class="theme-info-col about-text">
-						<?php echo $evolve_theme_description; ?>
+						<?php echo wp_kses_post( $evolve_theme_description ); ?>
 
                         <p>
                             <a href="<?php echo esc_url( 'https://theme4press.com/evolve-multipurpose-wordpress-theme/?utm_source=evolve-about&utm_medium=theme-homepage-link&utm_campaign=theme-info' ); ?>"

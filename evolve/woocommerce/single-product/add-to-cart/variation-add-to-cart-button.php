@@ -2,9 +2,9 @@
 /**
  * Single variation cart button
  *
- * @see https://docs.woocommerce.com/document/template-structure/
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 7.0.1
+ * @version 10.5.2
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -17,21 +17,22 @@ global $product;
 	<?php
 	do_action( 'woocommerce_before_add_to_cart_quantity' );
 
-	woocommerce_quantity_input( array(
-		'min_value'   => apply_filters( 'woocommerce_quantity_input_min', $product->get_min_purchase_quantity(), $product ),
-		'max_value'   => apply_filters( 'woocommerce_quantity_input_max', $product->get_max_purchase_quantity(), $product ),
-		'input_value' => isset( $_POST['quantity'] ) ? wc_stock_amount( wp_unslash( $_POST['quantity'] ) ) : $product->get_min_purchase_quantity(),
-		// WPCS: CSRF ok, input var ok.
-	) );
+	woocommerce_quantity_input(
+		array(
+			'min_value'   => $product->get_min_purchase_quantity(),
+			'max_value'   => $product->get_max_purchase_quantity(),
+			'input_value' => isset( $_POST['quantity'] ) ? wc_stock_amount( wp_unslash( $_POST['quantity'] ) ) : $product->get_min_purchase_quantity(), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Template repopulates quantity; wc_stock_amount() normalizes it.
+		)
+	);
 
 	do_action( 'woocommerce_after_add_to_cart_quantity' );
 	?>
 
-    <button type="submit"
-            class="btn single_add_to_cart_button button alt<?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>"><?php echo evolve_get_svg( 'shop' ) . esc_html( $product->single_add_to_cart_text() ); ?></button>
+	<button type="submit" class="btn single_add_to_cart_button button alt<?php echo esc_attr( evolve_wc_button_class() ); ?>"><?php echo evolve_get_svg( 'shop' ) . esc_html( $product->single_add_to_cart_text() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- evolve icon. ?></button>
 
 	<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
-    <input type="hidden" name="add-to-cart" value="<?php echo absint( $product->get_id() ); ?>"/>
-    <input type="hidden" name="product_id" value="<?php echo absint( $product->get_id() ); ?>"/>
-    <input type="hidden" name="variation_id" class="variation_id" value="0"/>
+
+	<input type="hidden" name="add-to-cart" value="<?php echo absint( $product->get_id() ); ?>" />
+	<input type="hidden" name="product_id" value="<?php echo absint( $product->get_id() ); ?>" />
+	<input type="hidden" name="variation_id" class="variation_id" value="0" />
 </div>

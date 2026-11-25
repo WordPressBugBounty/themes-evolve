@@ -1,6 +1,23 @@
 === Changelog ===
 
 
+Version  4.3.8
+Date:       24/11/26
+
+- Tested up to WordPress 7.1, WooCommerce 11.3 and PHP 8.4
+- WooCommerce templates updated to WooCommerce 11.3 (no more "outdated templates" notice), with accessibility improvements
+- Fixed: cart page showed no cart totals and no Proceed to checkout button
+- Fixed: grouped products had no Add to cart button
+- Fixed: saving an address on My Account > Addresses did nothing
+- Fixed: Account details on the My Account dashboard could not be saved
+- Fixed: My Account Orders tab showed no orders on stores using WooCommerce order tables (HPOS)
+- Fixed: order and thank-you pages failed with an error when an ordered product had since been deleted
+- Fixed: download links for downloadable products were missing on the order and thank-you pages
+- Fixed: snippets changing the shop's Add to cart button (text, link, classes) were ignored
+- Fixed: PHP warnings and deprecation notices on PHP 8.x
+- Security: output escaping hardened
+- Deprecated WordPress and WooCommerce functions replaced; code for very old versions removed
+
 Version  4.3.7
 
 Date:       14/06/23
@@ -66,7 +83,7 @@ Date:       12/08/20
 
 - Ability to add a Youtube video to Custom Content on the home page added.
 - Some minor bug fixes.
-- Updated Kirki for compatibility with Wordpress 5.5
+- Updated Kirki for compatibility with WordPress 5.5
 
 Version  4.2.7
 Date:       04/06/20
@@ -116,7 +133,7 @@ Date:        29/11/19
 
 - Added another image size for post sliders, to improve image quality
 - Fixed header settings being ignored
-- Improved compatibility with Wordpress 5.3
+- Improved compatibility with WordPress 5.3
 - Updated Kirki framework
 
 Version  4.1.9
@@ -543,7 +560,7 @@ Date:         30/8/15
 
 -  Fixed Sticky Header issue
 -  Fixed Header and Footer Patern Issue 
--  Added standard WordPres templates - single.php, 404.php, search.php, author.php, attachment.php, page.php
+-  Added standard WordPress templates - single.php, 404.php, search.php, author.php, attachment.php, page.php
 -  Updated translation files 
 -  Minor fixes 
 

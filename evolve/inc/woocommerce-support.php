@@ -50,12 +50,13 @@ if ( ! class_exists( 'evolve_woocommerce' ) ) {
 			add_filter( 'woocommerce_shop_loop_subcategory_title', array( $this,'template_loop_category_title'), 10 );
 		}
 
-		private static function get_wc_version() {
-			return defined( 'WC_VERSION' ) && WC_VERSION ? WC_VERSION : null;
-		}
-
+		/**
+		 * Always true: evolve needs a far newer WooCommerce. Kept in case a child theme calls it.
+		 *
+		 * @deprecated 4.3.8
+		 */
 		public static function is_wc_version_gte_2_3() {
-			return self::get_wc_version() && version_compare( self::get_wc_version(), '2.3', '>=' );
+			return true;
 		}
 
 		function shop_loop_item_title() {
@@ -593,7 +594,7 @@ function evolve_woocommerce_header_add_to_cart_fragment( $fragments ) {
 
                     <div class="media">
 
-                        <a href="<?php echo get_permalink( $cart_item['product_id'] ); ?>"><?php $evolve_thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image( array(
+                        <a href="<?php echo esc_url( get_permalink( $cart_item['product_id'] ) ); ?>"><?php $evolve_thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image( array(
 								80,
 								80
 							) ), $cart_item, $cart_item_key );
@@ -603,7 +604,7 @@ function evolve_woocommerce_header_add_to_cart_fragment( $fragments ) {
                             <h6><?php echo get_the_title($cart_item['product_id']); ?></h6>
                             <p>
                                 <a class="dropdown-item"
-                                   href="<?php echo get_permalink( $cart_item['product_id'] ); ?>"><?php echo $cart_item['quantity']; ?>
+                                   href="<?php echo esc_url( get_permalink( $cart_item['product_id'] ) ); ?>"><?php echo esc_html( $cart_item['quantity'] ); ?>
                                     x <?php echo $woocommerce->cart->get_product_subtotal( $cart_item['data'], $cart_item['quantity'] ); ?></a>
 
                             </p>
@@ -669,6 +670,11 @@ function evolve_woocommerce_after_cart_table( $args ) {
 	echo $html;
 }
 
+/**
+ * Not used by evolve. Kept in case a child theme calls it; will be removed in a future major version.
+ *
+ * @deprecated 4.3.8 Use woocommerce_cross_sell_display().
+ */
 function evolve_woocommerce_cross_sell_display_2( $posts_per_page = 3, $columns = 3, $orderby = 'rand' ) {
 	// Get visible cross sells then sort them at random.
 	$cross_sells = array_filter( array_map( 'wc_get_product', WC()->cart->get_cross_sells() ), 'wc_products_array_filter_visible' );
@@ -1228,8 +1234,7 @@ function evolve_woocommerce_view_dashboard( $args ) {
 add_action( 'woocommerce_account_orders', 'evolve_woocommerce_before_account_orders' );
 
 function evolve_woocommerce_before_account_orders( $args ) {
-	$order_count       = "";
-	$my_orders_columns = apply_filters( 'woocommerce_my_account_my_orders_columns', array(
+	$my_orders_columns = apply_filters( 'woocommerce_account_orders_columns', array( // WooCommerce also runs callbacks on the old name, woocommerce_my_account_my_orders_columns.
 		'order-number'  => __( 'Order', 'evolve' ),
 		'order-date'    => __( 'Date ', 'evolve' ),
 		'order-status'  => __( 'Status', 'evolve' ),
@@ -1237,12 +1242,13 @@ function evolve_woocommerce_before_account_orders( $args ) {
 		'order-actions' => '&nbsp;',
 	) );
 
-	$customer_orders = get_posts( apply_filters( 'woocommerce_my_account_my_orders_query', array(
-		'numberposts' => $order_count,
-		'meta_key'    => '_customer_user',
-		'meta_value'  => get_current_user_id(),
-		'post_type'   => wc_get_order_types( 'view-orders' ),
-		'post_status' => array_keys( wc_get_order_statuses() )
+	// WooCommerce's order query (as in its own my-orders template), so orders show with WooCommerce's order tables
+	// (HPOS, the default since WooCommerce 8.2) too; a post query found none there. Same number as before: one blog page.
+	$customer_orders = wc_get_orders( apply_filters( 'woocommerce_my_account_my_orders_query', array(
+		'customer' => get_current_user_id(),
+		'type'     => wc_get_order_types( 'view-orders' ),
+		'status'   => array_keys( wc_get_order_statuses() ),
+		'limit'    => (int) get_option( 'posts_per_page', 10 ),
 	) ) );
 
 	echo '<div class="tab-pane fade" id="account-orders" role="tabpanel" aria-labelledby="account-orders-tab">
@@ -1407,7 +1413,7 @@ add_action( 'woocommerce_account_address', 'evolve_woocommerce_before_my_account
 
 function evolve_woocommerce_before_my_account( $args ) {
 	$address_session = '';
-	if ( isset( $_SESSION['formvalue'] ) ) {
+	if ( evolve_WC_Form_Handler::$form_type ) {
 		$address_session = 'style="display:block"';
 	}
 	?>
@@ -1447,8 +1453,8 @@ function evolve_woocommerce_before_my_account( $args ) {
                     <div class="col<?php echo ( $col == '1' ) ? '' : '-lg-6'; ?>">
                         <div class="bg-white p-4 mt-4">
                             <div class="mb-3">
-                                <h5 class="d-inline"><?php echo $title; ?></h5>
-                                <a href="#" data-name="<?php echo $name; ?>" id="editaddress_<?php echo $name; ?>"
+                                <h5 class="d-inline"><?php echo esc_html( $title ); ?></h5>
+                                <a href="#" data-name="<?php echo esc_attr( $name ); ?>" id="editaddress_<?php echo esc_attr( $name ); ?>"
                                    class="edit woo_editaddress btn btn-sm ml-4 d-inline"><?php esc_html_e( 'Edit', 'evolve' ); ?></a>
                             </div>
                             <address>
@@ -1470,7 +1476,7 @@ function evolve_woocommerce_before_my_account( $args ) {
 								if ( ! $formatted_address ) {
 									_e( 'You have not set up this type of address yet', 'evolve' );
 								} else {
-									echo $formatted_address;
+									echo wp_kses_post( $formatted_address );
 								}
 								?>
                             </address>
@@ -1507,10 +1513,8 @@ function evolve_woocommerce_before_my_account( $args ) {
 					$address[ $key ]['value'] = apply_filters( 'woocommerce_my_account_edit_address_field_value', $value, $key, $load_address );
 
 					$addressform_session = '';
-					if ( isset( $_SESSION['formvalue'] ) && ! empty( $field['required'] ) && isset( $_POST[ $key ] ) ) {
-						$addressform_session = 'style=display:block';
-					} elseif ( isset( $_SESSION['formvalue'] ) ) {
-						$addressform_session = 'style=display:none';
+					if ( evolve_WC_Form_Handler::$form_type ) {
+						$addressform_session = evolve_WC_Form_Handler::$form_type === $load_address ? 'style=display:block' : 'style=display:none';
 					}
 				}
 				?>
@@ -1530,7 +1534,7 @@ function evolve_woocommerce_before_my_account( $args ) {
 
                     <p class="mb-0">
                         <input type="submit" class="btn btn-sm" id="saveaddress" name="save_address"
-                               value="<?php esc_url( 'Save Address', 'evolve' ); ?>"/>
+                               value="<?php esc_attr_e( 'Save Address', 'evolve' ); ?>"/>
 						<?php wp_nonce_field( 'woocommerce-edit_address' ); ?>
                         <input type="hidden" name="action" value="edit_address"/>
                         <input type="hidden" name="formvalue" value="billing"/>
@@ -1568,10 +1572,8 @@ function evolve_woocommerce_before_my_account( $args ) {
 				$address[ $key ]['value'] = apply_filters( 'woocommerce_my_account_edit_address_field_value', $value, $key, $load_address );
 
 				$addressform_session = '';
-				if ( isset( $_SESSION['formvalue'] ) && ! empty( $field['required'] ) && isset( $_POST[ $key ] ) ) {
-					$addressform_session = 'style=display:block';
-				} elseif ( isset( $_SESSION['formvalue'] ) ) {
-					$addressform_session = 'style=display:none';
+				if ( evolve_WC_Form_Handler::$form_type ) {
+					$addressform_session = evolve_WC_Form_Handler::$form_type === $load_address ? 'style=display:block' : 'style=display:none';
 				}
 			}
 			?>
@@ -1600,124 +1602,51 @@ function evolve_woocommerce_before_my_account( $args ) {
         </div>
     </div>
 	<?php
-	if(isset($_SESSION['formvalue'])){
-	    unset( $_SESSION['formvalue'] );
-	}
 }
 
 class evolve_WC_Form_Handler extends WC_Form_Handler {
+
+	/**
+	 * Address form ('billing' or 'shipping') submitted from the account dashboard in this request,
+	 * so the dashboard shows that form again with its errors.
+	 *
+	 * @var string
+	 */
+	public static $form_type = '';
 
 	public static function init() {
 		remove_action( 'template_redirect', array( 'WC_Form_Handler', 'save_address' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'evolve_save_address' ) );
 	}
 
+	/**
+	 * The account dashboard has both address forms on one page, so tell WooCommerce which address
+	 * is being saved, then let WooCommerce validate and save it. The address pages
+	 * (my-account/edit-address/billing|shipping) go straight to WooCommerce.
+	 */
 	public static function evolve_save_address() {
 		global $wp;
 
-		$formvalue = '';
-		if ( isset( $_POST['formvalue'] ) ) {
-			$formvalue             = $_POST['formvalue'];
-			$_SESSION['formvalue'] = $_POST['formvalue'];
-		}
+		$form_type = isset( $_POST['formvalue'] ) ? sanitize_key( wp_unslash( $_POST['formvalue'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checks the nonce.
 
-		if ( isset( $_POST['_wp_http_referer'] ) && strpos( $_POST['_wp_http_referer'], '/shipping' ) !== false ) {
-			$formvalue             = 'shipping';
-			$_SESSION['formvalue'] = 'shipping';
-		} elseif ( isset( $_POST['_wp_http_referer'] ) && strpos( $_POST['_wp_http_referer'], '/billing' ) !== false ) {
-			$formvalue             = 'billing';
-			$_SESSION['formvalue'] = 'billing';
-		}
-
-		if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
+		if ( ! in_array( $form_type, array( 'billing', 'shipping' ), true ) || isset( $wp->query_vars['edit-address'] ) ) {
+			parent::save_address();
 			return;
 		}
 
-		if ( empty( $_POST['action'] ) || 'edit_address' !== $_POST['action'] || empty( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-edit_address' ) ) {
-			return;
-		}
+		self::$form_type                = $form_type;
+		$wp->query_vars['edit-address'] = wc_edit_address_i18n( $form_type );
 
-		$user_id = get_current_user_id();
+		// After saving, return to the dashboard the form was on (WooCommerce goes to the addresses page).
+		$back_to_dashboard = function ( $location ) {
+			return wc_get_endpoint_url( 'edit-address', '', wc_get_page_permalink( 'myaccount' ) ) === $location ? wc_get_page_permalink( 'myaccount' ) : $location;
+		};
+		add_filter( 'wp_redirect', $back_to_dashboard );
 
-		if ( $user_id <= 0 ) {
-			return;
-		}
+		parent::save_address();
 
-		$load_address = ( $formvalue == 'shipping' ) ? 'shipping' : 'billing';
-
-		$address = WC()->countries->get_address_fields( esc_attr( $_POST[ $load_address . '_country' ] ), $load_address . '_' );
-
-		foreach ( $address as $key => $field ) {
-			if ( ! isset( $field['type'] ) ) {
-				$field['type'] = 'text';
-			}
-
-			// Get Value.
-			switch ( $field['type'] ) {
-				case 'checkbox' :
-					$_POST[ $key ] = isset( $_POST[ $key ] ) ? 1 : 0;
-					break;
-				default :
-					$_POST[ $key ] = isset( $_POST[ $key ] ) ? wc_clean( $_POST[ $key ] ) : '';
-					break;
-			}
-
-			// Hook to allow modification of value.
-			$_POST[ $key ] = apply_filters( 'woocommerce_process_myaccount_field_' . $key, $_POST[ $key ] );
-
-			// Validation: Required fields.
-			if ( ! empty( $field['required'] ) && empty( $_POST[ $key ] ) ) {
-				wc_add_notice( $field['label'] . ' ' . __( 'is a required field.', 'evolve' ), 'error' );
-			}
-
-			if ( ! empty( $_POST[ $key ] ) ) {
-
-				// Validation rules
-				if ( ! empty( $field['validate'] ) && is_array( $field['validate'] ) ) {
-					foreach ( $field['validate'] as $rule ) {
-						switch ( $rule ) {
-							case 'postcode' :
-								$_POST[ $key ] = strtoupper( str_replace( ' ', '', $_POST[ $key ] ) );
-
-								if ( ! WC_Validation::is_postcode( $_POST[ $key ], $_POST[ $load_address . '_country' ] ) ) {
-									wc_add_notice( __( 'Please enter a valid postcode/ZIP.', 'evolve' ), 'error' );
-								} else {
-									$_POST[ $key ] = wc_format_postcode( $_POST[ $key ], $_POST[ $load_address . '_country' ] );
-								}
-								break;
-							case 'phone' :
-								$_POST[ $key ] = wc_format_phone_number( $_POST[ $key ] );
-
-								if ( ! WC_Validation::is_phone( $_POST[ $key ] ) ) {
-									wc_add_notice( '<strong>' . $field['label'] . '</strong> ' . __( 'is not a valid phone number.', 'evolve' ), 'error' );
-								}
-								break;
-							case 'email' :
-								$_POST[ $key ] = strtolower( $_POST[ $key ] );
-
-								if ( ! is_email( $_POST[ $key ] ) ) {
-									wc_add_notice( '<strong>' . $field['label'] . '</strong> ' . __( 'is not a valid email address.', 'evolve' ), 'error' );
-								}
-								break;
-						}
-					}
-				}
-			}
-		}
-
-		if ( wc_notice_count( 'error' ) == 0 ) {
-
-			foreach ( $address as $key => $field ) {
-				update_user_meta( $user_id, $key, $_POST[ $key ] );
-			}
-
-			wc_add_notice( __( 'Address changed successfully.', 'evolve' ) );
-
-			do_action( 'woocommerce_customer_save_address', $user_id, $load_address );
-
-			wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
-			exit;
-		}
+		remove_filter( 'wp_redirect', $back_to_dashboard );
+		unset( $wp->query_vars['edit-address'] );
 	}
 
 }
@@ -1741,17 +1670,24 @@ function evolve_woocommerce_after_my_account( $args ) {
                     <label for="account_first_name"><?php esc_html_e( 'First name', 'evolve' ); ?> <span
                                 class="required">*</span></label>
                     <input type="text" class="form-control" name="account_first_name" id="account_first_name"
-                           value="<?php esc_attr( $user->first_name ); ?>"/>
+                           value="<?php echo esc_attr( $user->first_name ); ?>"/>
                 </p>
                 <p>
                     <label for="account_last_name"><?php esc_html_e( 'Last name', 'evolve' ); ?> <span class="required">*</span></label>
                     <input type="text" class="form-control" name="account_last_name" id="account_last_name"
-                           value="<?php esc_attr( $user->last_name ); ?>"/>
+                           value="<?php echo esc_attr( $user->last_name ); ?>"/>
+                </p>
+                <p>
+                    <label for="account_display_name"><?php esc_html_e( 'Display name', 'evolve' ); ?> <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="account_display_name" id="account_display_name"
+                           aria-describedby="account_display_name_description"
+                           value="<?php echo esc_attr( $user->display_name ); ?>"/>
+                    <small id="account_display_name_description" class="form-text text-muted"><?php echo wc_reviews_enabled() ? esc_html__( 'This will be how your name will be displayed in the account section and in reviews', 'evolve' ) : esc_html__( 'This will be how your name will be displayed in the account section', 'evolve' ); ?></small>
                 </p>
                 <p>
                     <label for="account_email"><?php esc_html_e( 'Email address', 'evolve' ); ?> <span class="required">*</span></label>
-                    <input type="email" class="form-control" name="account_email" id="account_email"
-                           value="<?php esc_attr( $user->user_email ); ?>"/>
+                    <input type="email" class="form-control" name="account_email" id="account_email" autocomplete="email"
+                           value="<?php echo esc_attr( $user->user_email ); ?>"/>
                 </p>
                 <fieldset>
                     <legend><?php esc_html_e( 'Password Change', 'evolve' ); ?></legend>
@@ -1774,7 +1710,7 @@ function evolve_woocommerce_after_my_account( $args ) {
                        name="save_account_details"
                        value="<?php esc_attr_e( 'Save changes', 'evolve' ); ?>"/>
 
-				<?php wp_nonce_field( 'save_account_details' ); ?>
+				<?php wp_nonce_field( 'save_account_details', 'save-account-details-nonce' ); ?>
                 <input type="hidden" name="action" value="save_account_details"/>
             </form>
 
@@ -1791,8 +1727,7 @@ add_action( 'woocommerce_view_order', 'evolve_woocommerce_view_order', 10 );
 function evolve_woocommerce_view_order( $order_id ) {
 	global $woocommerce;
 
-	$order              = wc_get_order( $order_id );
-	$order_item_product = new WC_Order_Item_Product();
+	$order = wc_get_order( $order_id );
 	?>
 
     <h4 class="mb-4"><?php esc_html_e( 'Order details', 'evolve' ); ?></h4>
@@ -1812,8 +1747,8 @@ function evolve_woocommerce_view_order( $order_id ) {
 					?>
                     <tr>
                         <td colspan="2" class="filler-td">&nbsp;</td>
-                        <th scope="row"><?php echo $total['label']; ?></th>
-                        <td class="product-total"><?php echo $total['value']; ?></td>
+                        <th scope="row"><?php echo esc_html( $total['label'] ); ?></th>
+                        <td class="product-total"><?php echo $total['value']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce's price markup; wp_kses_post would strip its <bdi>. ?></td>
                     </tr>
 				<?php
 				endforeach;
@@ -1825,7 +1760,7 @@ function evolve_woocommerce_view_order( $order_id ) {
 			if ( sizeof( $order->get_items() ) > 0 ) {
 
 				foreach ( $order->get_items() as $item ) {
-					$_product = apply_filters( 'woocommerce_order_item_product', $order->get_product_from_item( $item ), $item );
+					$_product = apply_filters( 'woocommerce_order_item_product', $item->get_product(), $item );
 					$product  = apply_filters( 'woocommerce_order_item_product', $item->get_product(), $item );
 					?>
                     <tr class="<?php echo esc_attr( apply_filters( 'woocommerce_order_item_class', 'order_item', $item, $order ) ); ?>">
@@ -1834,12 +1769,15 @@ function evolve_woocommerce_view_order( $order_id ) {
 							<?php
 							$cart_item     = '';
 							$cart_item_key = '';
-							$thumbnail     = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+							// The product may have been deleted since the order was placed: show the row without a thumbnail.
+							if ( $_product ) {
+								$thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
 
-							if ( ! $_product->is_visible() ) {
-								echo $thumbnail;
-							} else {
-								printf( '<a class="product-thumbnail" href="%s">%s</a>', $_product->get_permalink(), $thumbnail );
+								if ( ! $_product->is_visible() ) {
+									echo $thumbnail;
+								} else {
+									printf( '<a class="product-thumbnail" href="%s">%s</a>', esc_url( $_product->get_permalink() ), $thumbnail );
+								}
 							}
 							?>
 
@@ -1857,7 +1795,7 @@ function evolve_woocommerce_view_order( $order_id ) {
 
 							if ( $_product && $_product->exists() && $_product->is_downloadable() && $order->is_download_permitted() ) {
 
-								$download_files = $order_item_product->get_item_downloads();
+								$download_files = $item->get_item_downloads();
 								$i              = 0;
 								$links          = array();
 
@@ -1902,7 +1840,7 @@ function evolve_woocommerce_view_order( $order_id ) {
 				}
 			}
 
-			do_action( 'woocommerce_order_items_table', $order );
+			do_action( 'woocommerce_order_details_after_order_table_items', $order ); // WooCommerce also runs callbacks on the old name, woocommerce_order_items_table.
 			?>
 
             </tbody>
@@ -2006,6 +1944,12 @@ if ( class_exists( 'Woocommerce' ) ) {
    Woo Products Shortcode Recode
    ======================================= */
 
+/**
+ * Not used by evolve (no shortcode is registered for it). Kept in case a child theme calls it; will be removed in a
+ * future major version.
+ *
+ * @deprecated 4.3.8
+ */
 function evolve_woo_product( $atts, $content = null ) {
 	global $woocommerce_loop;
 
@@ -2054,7 +1998,7 @@ function evolve_woo_product( $atts, $content = null ) {
 
 		while ( $products->have_posts() ) : $products->the_post();
 
-			woocommerce_get_template_part( 'content', 'product' );
+			wc_get_template_part( 'content', 'product' );
 
 		endwhile; // end of the loop.
 
@@ -2210,7 +2154,7 @@ if ( evolve_theme_mod( 'evl_woocommerce_acc_link_main_nav', 0 ) == "0" && evolve
                                                        value="<?php esc_attr_e( 'Log In', 'evolve' ); ?>">
                                                 <input type="hidden" name="redirect_to"
                                                        value="<?php if ( isset( $_SERVER['HTTP_REFERER'] ) ) {
-													       echo $_SERVER['HTTP_REFERER'];
+													       echo esc_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 												       } ?>">
                                                 <input type="hidden" name="testcookie" value="1">
 
@@ -2273,7 +2217,7 @@ if ( evolve_theme_mod( 'evl_woocommerce_acc_link_main_nav', 0 ) == "0" && evolve
 
                                                 <div class="media">
 
-                                                    <a href="<?php echo get_permalink( $cart_item['product_id'] ); ?>"><?php $evolve_thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image( array(
+                                                    <a href="<?php echo esc_url( get_permalink( $cart_item['product_id'] ) ); ?>"><?php $evolve_thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image( array(
 															80,
 															80
 														) ), $cart_item, $cart_item_key );
@@ -2283,7 +2227,7 @@ if ( evolve_theme_mod( 'evl_woocommerce_acc_link_main_nav', 0 ) == "0" && evolve
                                                         <h6><?php echo $cart_item['data']->get_name(); ?></h6>
                                                         <p>
                                                             <a class="dropdown-item"
-                                                               href="<?php echo get_permalink( $cart_item['product_id'] ); ?>"><?php echo $cart_item['quantity']; ?>
+                                                               href="<?php echo esc_url( get_permalink( $cart_item['product_id'] ) ); ?>"><?php echo esc_html( $cart_item['quantity'] ); ?>
                                                                 x <?php echo $woocommerce->cart->get_product_subtotal( $cart_item['data'], $cart_item['quantity'] ); ?></a>
                                                         </p>
                                                     </div>

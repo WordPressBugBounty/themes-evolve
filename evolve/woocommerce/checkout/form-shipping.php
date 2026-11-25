@@ -10,36 +10,36 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see     https://docs.woocommerce.com/document/template-structure/
- * @package WooCommerce/Templates
- * @version 3.6.0
+ * evolve: WooCommerce 11.2.0's template in one bordered box with a Bootstrap checkbox. The "Additional information"
+ * heading is shown as before (only when there is no separate shipping address to fill in).
+ *
+ * @see     https://woocommerce.com/document/template-structure/
+ * @package WooCommerce\Templates
+ * @version 11.2.0
  * @global WC_Checkout $checkout
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
 
-<div class="border p-4">
+<div class="woocommerce-shipping-fields border p-4">
 
 	<?php if ( true === WC()->cart->needs_shipping_address() ) : ?>
 
-        <h4 id="ship-to-different-address">
-            <div class="custom-control custom-checkbox">
-                <input id="ship-to-different-address-checkbox check-different-address"
-                       class="woocommerce-form__input woocommerce-form__input-checkbox custom-control-input" <?php checked( apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 ), 1 ); ?>
-                       type="checkbox" name="ship_to_different_address" value="1"/>
-                <label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox custom-control-label"
-                       for="ship-to-different-address-checkbox check-different-address">
-					<?php _e( 'Ship to a different address?', 'evolve' ); ?>
-                </label>
-            </div>
-        </h4>
+		<h4 id="ship-to-different-address">
+			<div class="custom-control custom-checkbox">
+				<input id="ship-to-different-address-checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox input-checkbox custom-control-input" <?php checked( apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 ), 1 ); ?> type="checkbox" name="ship_to_different_address" value="1" />
+				<label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox custom-control-label" for="ship-to-different-address-checkbox">
+					<?php esc_html_e( 'Ship to a different address?', 'evolve' ); ?>
+				</label>
+			</div>
+		</h4>
 
-        <div class="shipping_address mb-4">
+		<div class="shipping_address mb-4">
 
 			<?php do_action( 'woocommerce_before_checkout_shipping_form', $checkout ); ?>
 
-            <div class="woocommerce-shipping-fields__field-wrapper">
+			<div class="woocommerce-shipping-fields__field-wrapper">
 				<?php
 				$fields = $checkout->get_checkout_fields( 'shipping' );
 
@@ -47,32 +47,36 @@ defined( 'ABSPATH' ) || exit;
 					woocommerce_form_field( $key, $field, $checkout->get_value( $key ) );
 				}
 				?>
-            </div>
+			</div>
 
 			<?php do_action( 'woocommerce_after_checkout_shipping_form', $checkout ); ?>
 
-        </div>
+		</div>
 
 	<?php endif; ?>
 
-	<?php do_action( 'woocommerce_before_order_notes', $checkout ); ?>
+	<div class="woocommerce-additional-fields">
+		<?php do_action( 'woocommerce_before_order_notes', $checkout ); ?>
 
-	<?php if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) : ?>
+		<?php $order_fields = $checkout->get_checkout_fields( 'order' ); ?>
 
-		<?php if ( ! WC()->cart->needs_shipping() || wc_ship_to_billing_address_only() ) : ?>
+		<?php if ( ! empty( $order_fields ) ) : ?>
 
-            <h4><?php _e( 'Additional information', 'evolve' ); ?></h4>
+			<?php if ( ! WC()->cart->needs_shipping() || wc_ship_to_billing_address_only() ) : ?>
+
+				<h4><?php esc_html_e( 'Additional information', 'evolve' ); ?></h4>
+
+			<?php endif; ?>
+
+			<div class="woocommerce-additional-fields__field-wrapper">
+				<?php foreach ( $order_fields as $key => $field ) : ?>
+					<?php woocommerce_form_field( $key, $field, $checkout->get_value( $key ) ); ?>
+				<?php endforeach; ?>
+			</div>
 
 		<?php endif; ?>
 
-        <div class="woocommerce-additional-fields__field-wrapper">
-			<?php foreach ( $checkout->get_checkout_fields( 'order' ) as $key => $field ) : ?>
-				<?php woocommerce_form_field( $key, $field, $checkout->get_value( $key ) ); ?>
-			<?php endforeach; ?>
-        </div>
-
-	<?php endif; ?>
-
-	<?php do_action( 'woocommerce_after_order_notes', $checkout ); ?>
+		<?php do_action( 'woocommerce_after_order_notes', $checkout ); ?>
+	</div>
 
 </div>

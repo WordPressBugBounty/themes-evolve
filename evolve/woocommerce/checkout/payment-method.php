@@ -10,8 +10,10 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see 	    https://docs.woocommerce.com/document/template-structure/
- * @package 	WooCommerce/Templates
+ * evolve: WooCommerce's template with a Bootstrap radio button.
+ *
+ * @see         https://woocommerce.com/document/template-structure/
+ * @package     WooCommerce\Templates
  * @version     3.5.0
  */
 
@@ -19,14 +21,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
-<li class="wc_payment_method payment_method_<?php echo $gateway->id; ?> custom-control custom-radio">
-	<input id="payment_method_<?php echo $gateway->id; ?>" type="radio" class="input-radio custom-control-input" name="payment_method" value="<?php echo esc_attr( $gateway->id ); ?>" <?php checked( $gateway->chosen, true ); ?> data-order_button_text="<?php echo esc_attr( $gateway->order_button_text ); ?>" />
+<li class="wc_payment_method payment_method_<?php echo esc_attr( $gateway->id ); ?> custom-control custom-radio">
+	<input id="payment_method_<?php echo esc_attr( $gateway->id ); ?>" type="radio" class="input-radio custom-control-input" name="payment_method" value="<?php echo esc_attr( $gateway->id ); ?>" <?php checked( $gateway->chosen, true ); ?> data-order_button_text="<?php echo esc_attr( $gateway->order_button_text ); ?>" />
 
-	<label class="custom-control-label" for="payment_method_<?php echo $gateway->id; ?>">
-		<?php echo $gateway->get_title(); ?> <?php echo $gateway->get_icon(); ?>
+	<label class="custom-control-label" for="payment_method_<?php echo esc_attr( $gateway->id ); ?>">
+		<?php echo $gateway->get_title(); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The base gateway title is sanitized; the public filter intentionally allows HTML. */ ?> <?php echo $gateway->get_icon(); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The base icon attributes are escaped; the public filter intentionally allows HTML. */ ?>
 	</label>
 	<?php if ( $gateway->has_fields() || $gateway->get_description() ) : ?>
-		<div class="payment_box payment_method_<?php echo $gateway->id; ?>" <?php if ( ! $gateway->chosen ) : ?>style="display:none;"<?php endif; ?>>
+		<div class="payment_box payment_method_<?php echo esc_attr( $gateway->id ); ?>" <?php if ( ! $gateway->chosen ) : /* phpcs:ignore Squiz.ControlStructures.ControlSignature.NewlineAfterOpenBrace */ ?>style="display:none;"<?php endif; /* phpcs:ignore Squiz.ControlStructures.ControlSignature.NewlineAfterOpenBrace */ ?>>
 			<?php $gateway->payment_fields(); ?>
 		</div>
 	<?php endif; ?>

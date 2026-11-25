@@ -10,37 +10,39 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see https://docs.woocommerce.com/document/template-structure/
+ * evolve: WooCommerce 9.2.0's template without WooCommerce's "form-row" class on the paragraphs
+ * (in Bootstrap it turns them into flex rows).
+ *
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 7.0.1
+ * @version 9.2.0
  */
 
 defined( 'ABSPATH' ) || exit;
 
-do_action( 'woocommerce_before_lost_password_form' ); ?>
+do_action( 'woocommerce_before_lost_password_form' );
+?>
 
-    <form method="post" class="woocommerce-ResetPassword lost_reset_password">
+<form method="post" class="woocommerce-ResetPassword lost_reset_password">
 
-        <p><?php echo apply_filters( 'woocommerce_lost_password_message', esc_html__( 'Lost your password? Please enter your username or email address. You will receive a link to create a new password via email.', 'evolve' ) ); ?></p><?php // @codingStandardsIgnoreLine ?>
+	<p><?php echo apply_filters( 'woocommerce_lost_password_message', esc_html__( 'Lost your password? Please enter your username or email address. You will receive a link to create a new password via email.', 'evolve' ) ); ?></p><?php // @codingStandardsIgnoreLine ?>
 
-        <p class="woocommerce-form-row woocommerce-form-row--first form-row-first">
-            <label for="user_login"><?php esc_html_e( 'Username or email', 'evolve' ); ?></label>
-            <input class="woocommerce-Input woocommerce-Input--text input-text" type="text" name="user_login"
-                   id="user_login" autocomplete="username"/>
-        </p>
+	<p class="woocommerce-form-row woocommerce-form-row--first form-row-first">
+		<label for="user_login"><?php esc_html_e( 'Username or email', 'evolve' ); ?>&nbsp;<span class="required" aria-hidden="true">*</span><span class="screen-reader-text"><?php esc_html_e( 'Required', 'evolve' ); ?></span></label>
+		<input class="woocommerce-Input woocommerce-Input--text input-text" type="text" name="user_login" id="user_login" autocomplete="username" required aria-required="true" />
+	</p>
 
-        <div class="clear"></div>
+	<div class="clear"></div>
 
-		<?php do_action( 'woocommerce_lostpassword_form' ); ?>
+	<?php do_action( 'woocommerce_lostpassword_form' ); ?>
 
-        <p class="woocommerce-form-row">
-            <input type="hidden" name="wc_reset_password" value="true"/>
-            <button type="submit" class="woocommerce-Button button"
-                    value="<?php esc_attr_e( 'Reset password', 'evolve' ); ?>"><?php esc_html_e( 'Reset password', 'evolve' ); ?></button>
-        </p>
+	<p class="woocommerce-form-row">
+		<input type="hidden" name="wc_reset_password" value="true" />
+		<button type="submit" class="woocommerce-Button button<?php echo esc_attr( evolve_wc_button_class() ); ?>" value="<?php esc_attr_e( 'Reset password', 'evolve' ); ?>"><?php esc_html_e( 'Reset password', 'evolve' ); ?></button>
+	</p>
 
-		<?php wp_nonce_field( 'lost_password', 'woocommerce-lost-password-nonce' ); ?>
+	<?php wp_nonce_field( 'lost_password', 'woocommerce-lost-password-nonce' ); ?>
 
-    </form>
+</form>
 <?php
 do_action( 'woocommerce_after_lost_password_form' );

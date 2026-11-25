@@ -274,18 +274,18 @@ class evolve_Tabs_Widget extends WP_Widget {
         <p>
             <label for="<?php echo $this->get_field_id( 'posts' ); ?>"><?php esc_html_e( 'Number of popular posts', 'evolve' ); ?></label>
             <input class="widefat" type="text" id="<?php echo $this->get_field_id( 'posts' ); ?>"
-                   name="<?php echo $this->get_field_name( 'posts' ); ?>" value="<?php echo $instance['posts']; ?>"/>
+                   name="<?php echo $this->get_field_name( 'posts' ); ?>" value="<?php echo esc_attr( $instance['posts'] ); ?>"/>
         </p>
         <p>
             <label for="<?php echo $this->get_field_id( 'tags' ); ?>"><?php esc_html_e( 'Number of recent posts', 'evolve' ); ?></label>
             <input class="widefat" type="text" id="<?php echo $this->get_field_id( 'tags' ); ?>"
-                   name="<?php echo $this->get_field_name( 'tags' ); ?>" value="<?php echo $instance['tags']; ?>"/>
+                   name="<?php echo $this->get_field_name( 'tags' ); ?>" value="<?php echo esc_attr( $instance['tags'] ); ?>"/>
         </p>
         <p>
             <label for="<?php echo $this->get_field_id( 'comments' ); ?>"><?php esc_html_e( 'Number of comments', 'evolve' ); ?></label>
             <input class="widefat" type="text" id="<?php echo $this->get_field_id( 'comments' ); ?>"
                    name="<?php echo $this->get_field_name( 'comments' ); ?>"
-                   value="<?php echo $instance['comments']; ?>"/>
+                   value="<?php echo esc_attr( $instance['comments'] ); ?>"/>
         </p>
         <p>
             <input class="checkbox" type="checkbox" <?php checked( $instance['show_popular_posts'], 'on' ); ?>

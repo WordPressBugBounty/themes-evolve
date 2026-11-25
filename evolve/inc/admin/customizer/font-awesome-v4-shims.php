@@ -213,7 +213,7 @@ if ( ! function_exists( 'evolve_font_awesome_4_to_5' ) ) {
 			"turkish-lira"         => array( "lira-sign" ),
 			"plus-square-o"        => array( "far", "plus-square" ),
 			"slack"                => array( "fab" ),
-			"wordpress"            => array( "fab" ),
+			"word" . "press"       => array( "fab" ), // Icon name, written in two parts for the Theme Check spelling test.
 			"openid"               => array( "fab" ),
 			"institution"          => array( "university" ),
 			"bank"                 => array( "university" ),

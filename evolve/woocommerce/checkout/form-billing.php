@@ -10,22 +10,24 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see     https://docs.woocommerce.com/document/template-structure/
- * @package WooCommerce/Templates
+ * evolve: WooCommerce's template in a bordered box with smaller headings and a Bootstrap checkbox.
+ *
+ * @see     https://woocommerce.com/document/template-structure/
+ * @package WooCommerce\Templates
  * @version 3.6.0
  * @global WC_Checkout $checkout
  */
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<div class="border p-4">
+<div class="woocommerce-billing-fields border p-4">
 	<?php if ( wc_ship_to_billing_address_only() && WC()->cart->needs_shipping() ) : ?>
 
-        <h4><?php _e( 'Billing &amp; Shipping', 'evolve' ); ?></h4>
+        <h4><?php esc_html_e( 'Billing &amp; Shipping', 'evolve' ); ?></h4>
 
 	<?php else : ?>
 
-        <h4><?php _e( 'Billing details', 'evolve' ); ?></h4>
+        <h4><?php esc_html_e( 'Billing details', 'evolve' ); ?></h4>
 
 	<?php endif; ?>
 
@@ -53,7 +55,7 @@ defined( 'ABSPATH' ) || exit;
                        id="createaccount" <?php checked( ( true === $checkout->get_value( 'createaccount' ) || ( true === apply_filters( 'woocommerce_create_account_default_checked', false ) ) ), true ) ?>
                        type="checkbox" name="createaccount" value="1"/>
                 <label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox custom-control-label"
-                       for="createaccount"><?php _e( 'Create an account?', 'evolve' ); ?></label>
+                       for="createaccount"><?php esc_html_e( 'Create an account?', 'evolve' ); ?></label>
             </p>
 
 		<?php endif; ?>

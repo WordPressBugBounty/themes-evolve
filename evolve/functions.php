@@ -136,31 +136,6 @@ if ( ! function_exists( 'evolve_setup' ) ) {
 		// Editor Style Support
 		add_editor_style( 'assets/css/editor-style.css' );
 
-		// Custom Titles
-		if ( version_compare( $GLOBALS['wp_version'], '4.1', '<' ) ) :
-			function evolve_wp_title( $title, $sep ) {
-				if ( is_feed() ) {
-					return $title;
-				}
-				global $page, $paged;
-				// Add the blog name
-				$title .= get_bloginfo( 'name', 'display' );
-				// Add the blog description for the front page.
-				$site_description = get_bloginfo( 'description', 'display' );
-				if ( $site_description && ( ( is_front_page() && is_page() ) || is_home() ) ) {
-					$title .= " $sep $site_description";
-				}
-				// Add a page number if necessary:
-				if ( ( $paged >= 2 || $page >= 2 ) && ! is_404() ) {
-					$title .= " $sep " . sprintf( __( 'Page %s', 'evolve' ), max( $paged, $page ) );
-				}
-
-				return $title;
-			}
-
-			add_filter( 'wp_title', 'evolve_wp_title', 10, 2 );
-		endif;
-
 		// Custom Header Support
 		$args = array(
 			'flex-width'  => true,
@@ -473,11 +448,8 @@ if ( ! function_exists( 'evolve_scripts' ) ) {
 		// WooCommerce
 
 		if ( class_exists( 'Woocommerce' ) ) {
-			global $woocommerce;
-			if ( version_compare( $woocommerce->version, '2.3', '>=' ) ) {
-				$local_variables['woocommerce_23'] = true;
-			}
-			$local_variables['woocommerce'] = true;
+			$local_variables['woocommerce_23'] = true; // Kept for child-theme scripts; evolve's own scripts no longer read it.
+			$local_variables['woocommerce']    = true;
 		}
 
 		// Back To Top Button (Scroll to Top)
@@ -792,6 +764,7 @@ if ( class_exists( 'bbPress' ) ) {
 
 if ( class_exists( 'Woocommerce' ) ) {
 	require get_parent_theme_file_path( '/inc/woocommerce-support.php' );
+	require get_parent_theme_file_path( '/inc/woocommerce-templates.php' );
 }
 /*
     Support

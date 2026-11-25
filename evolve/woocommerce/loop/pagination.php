@@ -10,9 +10,11 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see     https://docs.woocommerce.com/document/template-structure/
- * @package WooCommerce/Templates
- * @version 3.3.1
+ * evolve: WooCommerce 9.3.0's template, printed as Bootstrap pagination with Previous/Next text.
+ *
+ * @see     https://woocommerce.com/document/template-structure/
+ * @package WooCommerce\Templates
+ * @version 9.3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -28,34 +30,42 @@ if ( $total <= 1 ) {
 	return;
 }
 ?>
-<nav aria-label="<?php _e( "Pages", "evolve" ); ?>" class="navigation">
+<nav aria-label="<?php esc_attr_e( 'Pages', 'evolve' ); ?>" class="navigation">
 	<?php
-	$page_list = paginate_links( apply_filters( 'woocommerce_pagination_args', array( // WPCS: XSS ok.
-		'base'      => $base,
-		'format'    => $format,
-		'current'   => max( 1, $current ),
-		'total'     => $total,
-		'type'      => 'array',
-		'end_size'  => 3,
-		'mid_size'  => 1,
-		'prev_next' => true,
-		'prev_text' => sprintf( __( 'Previous', 'evolve' ) ),
-		'next_text' => sprintf( __( 'Next', 'evolve' ) ),
-		'add_args'  => false,
-	) ) );
+	/**
+	 * Filters the pagination arguments for the product loop.
+	 *
+	 * @param array $args Pagination arguments.
+	 *
+	 * @since 2.0.0
+	 */
+	$page_list = paginate_links(
+		apply_filters(
+			'woocommerce_pagination_args',
+			array(
+				'base'      => $base,
+				'format'    => $format,
+				'current'   => max( 1, $current ),
+				'total'     => $total,
+				'type'      => 'array',
+				'end_size'  => 3,
+				'mid_size'  => 1,
+				'prev_next' => true,
+				'prev_text' => esc_html__( 'Previous', 'evolve' ),
+				'next_text' => esc_html__( 'Next', 'evolve' ),
+				'add_args'  => false,
+			)
+		)
+	);
 
 	if ( is_array( $page_list ) ) {
-		//$paged = ( get_query_var( 'paged' ) == 0 ) ? 1 : get_query_var( 'paged' );
 		$pagination = '<ul class="pagination justify-content-center">';
 		foreach ( $page_list as $individual_page ) {
 			$pagination .= '<li class="page-item"> ' . str_replace( 'page-numbers', 'page-link', $individual_page ) . '</li>';
 		}
 		$pagination .= '</ul>';
 
-		echo $pagination;
-
+		echo $pagination; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WordPress generates the pagination markup.
 	}
 	?>
 </nav>
-
-<?php //evolve_number_pagination(); ?>

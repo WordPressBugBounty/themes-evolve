@@ -77,7 +77,7 @@ if ( ! function_exists( 'evolve_discussion_rss' ) ) {
 	function evolve_discussion_rss() {
 		global $id;
 		$uri  = get_post_comments_feed_link( $id );
-		$text = '<div class="col-auto pl-sm-0"><a title="' . __( 'Follow replies', 'evolve' ) . '" class="comment-feed" data-toggle="tooltip" data-placement="top" href="' . $uri . '">' . evolve_get_svg( 'rss' ) . '</a></div>';
+		$text = '<div class="col-auto pl-sm-0"><a title="' . esc_attr__( 'Follow replies', 'evolve' ) . '" class="comment-feed" data-toggle="tooltip" data-placement="top" href="' . esc_url( $uri ) . '">' . evolve_get_svg( 'rss' ) . '</a></div>';
 		echo $text;
 	}
 }

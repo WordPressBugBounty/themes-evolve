@@ -13,7 +13,7 @@
  * @see    https://docs.woocommerce.com/document/template-structure/
  * @author  WooThemes
  * @package WooCommerce/Templates
- * @version 3.8.0
+ * @version 9.8.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -35,7 +35,7 @@ if ( ! empty( $tabs ) ) : ?>
 			<?php foreach ( $tabs as $key => $tab ) : ?>
                 <a class="nav-link <?php echo esc_attr( $key ); ?>_tab" id="<?php echo esc_attr( $key ); ?>"
                    data-toggle="pill" role="tab" aria-controls="tab-<?php echo esc_attr( $key ); ?>"
-                   href="#tab-<?php echo esc_attr( $key ); ?>"><?php echo apply_filters( 'woocommerce_product_' . $key . '_tab_title', esc_html( $tab['title'] ), $key ); ?></a>
+                   href="#tab-<?php echo esc_attr( $key ); ?>"><?php echo wp_kses_post( apply_filters( 'woocommerce_product_' . $key . '_tab_title', $tab['title'], $key ) ); ?></a>
 			<?php endforeach; ?>
         </div>
         <div class="tab-content mt-4">

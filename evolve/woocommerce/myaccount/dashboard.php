@@ -12,7 +12,11 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see     https://docs.woocommerce.com/document/template-structure/
+ * evolve: WooCommerce 4.4.0's template (still current) replaced by evolve's tabbed dashboard: the actions below print
+ * the greeting, dashboard, downloads, orders, addresses and account forms (inc/woocommerce-support.php).
+ * woocommerce_account_dashboard is WooCommerce's own action, so plugins that add to the dashboard keep working.
+ *
+ * @see     https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
  * @version 4.4.0
  */
