@@ -2,7 +2,7 @@
 # This file is distributed under the GNU General Public License v2.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: evolve 4.3.8\n"
+"Project-Id-Version: evolve 4.3.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/theme/evolve\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"

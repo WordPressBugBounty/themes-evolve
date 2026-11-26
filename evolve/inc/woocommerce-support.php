@@ -315,6 +315,7 @@ function evolve_woocommerce_catalog_ordering() {
 
 	$woo_items = evolve_theme_mod( 'evl_woo_items', '12' );
 
+	$params = array();
 	if ( isset( $_SERVER['QUERY_STRING'] ) ) {
 
 		parse_str( $_SERVER['QUERY_STRING'], $params );
@@ -373,13 +374,15 @@ function evolve_woocommerce_catalog_ordering() {
 function evolve_woocommerce_get_catalog_ordering_args( $args ) {
 	global $woocommerce;
 
+	$params = array();
 	if ( isset( $_SERVER['QUERY_STRING'] ) ) {
 
 		parse_str( $_SERVER['QUERY_STRING'], $params );
 	}
 
-	$pob = ! empty( $params['product_orderby'] ) ? $params['product_orderby'] : 'default';
-	$po  = ! empty( $params['product_order'] ) ? $params['product_order'] : 'asc';
+	// These values come from the URL and are only compared against fixed words below.
+	$pob = ( ! empty( $params['product_orderby'] ) && is_string( $params['product_orderby'] ) ) ? $params['product_orderby'] : 'default';
+	$po  = ( ! empty( $params['product_order'] ) && is_string( $params['product_order'] ) ) ? $params['product_order'] : 'asc';
 
 	switch ( $pob ) {
 		case 'date':
@@ -443,6 +446,9 @@ function evolve_woocommerce_get_catalog_ordering_args( $args ) {
 function evolve_order_by_rating_post_clauses( $args ) {
 	global $wpdb;
 
+	// Sort the product query only: without this, every later query on the page was changed too.
+	remove_filter( 'posts_clauses', 'evolve_order_by_rating_post_clauses' );
+
 	$args['fields'] .= ", AVG( $wpdb->commentmeta.meta_value ) as average_rating ";
 
 	$args['where'] .= " AND ( $wpdb->commentmeta.meta_key = 'rating' OR $wpdb->commentmeta.meta_key IS null ) ";
@@ -452,12 +458,13 @@ function evolve_order_by_rating_post_clauses( $args ) {
 		LEFT JOIN $wpdb->commentmeta ON($wpdb->comments.comment_ID = $wpdb->commentmeta.comment_id)
 	";
 
+	$params = array();
 	if ( isset( $_SERVER['QUERY_STRING'] ) ) {
 		parse_str( $_SERVER['QUERY_STRING'], $params );
 	}
 
-	$order = ! empty( $params['product_order'] ) ? $params['product_order'] : 'desc';
-	$order = strtoupper( $order );
+	// Only ASC or DESC may reach the query: this value comes from the URL.
+	$order = ( ! empty( $params['product_order'] ) && is_string( $params['product_order'] ) && 'asc' === strtolower( $params['product_order'] ) ) ? 'ASC' : 'DESC';
 
 	$args['orderby'] = "average_rating {$order}, $wpdb->posts.post_date DESC";
 
@@ -472,6 +479,7 @@ function evolve_loop_shop_per_page() {
 
 	$woo_items = evolve_theme_mod( 'evl_woo_items', '12' );
 
+	$params = array();
 	if ( isset( $_SERVER['QUERY_STRING'] ) ) {
 		parse_str( $_SERVER['QUERY_STRING'], $params );
 	}
@@ -482,7 +490,8 @@ function evolve_loop_shop_per_page() {
 		$per_page = 12;
 	}
 
-	$pc = ! empty( $params['product_count'] ) ? $params['product_count'] : $per_page;
+	// The number of products comes from the URL: accept a number only.
+	$pc = ( ! empty( $params['product_count'] ) && is_numeric( $params['product_count'] ) ) ? (int) $params['product_count'] : $per_page;
 
 	return $pc;
 }
