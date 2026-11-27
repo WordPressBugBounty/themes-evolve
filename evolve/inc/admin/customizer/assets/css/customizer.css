@@ -57,6 +57,29 @@
     text-transform: uppercase;
 }
 
+/* WordPress 6.7 and newer put the panel title inside a button. Keep the icon and the title on one line. */
+#customize-theme-controls .accordion-section-title:has(> button.accordion-trigger) {
+    padding: 0;
+    position: relative;
+}
+
+#customize-theme-controls .accordion-section-title > button.accordion-trigger {
+    padding: 10px 30px 10px 15px;
+}
+
+#customize-theme-controls .accordion-section-title.dashicons-before:has(> button.accordion-trigger)::before {
+    left: 15px;
+    margin: -8px 0 0;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+}
+
+#customize-theme-controls .accordion-section-title.dashicons-before > button.accordion-trigger {
+    padding-left: 39px;
+}
+
 #customize-theme-controls #accordion-section-evl-theme-links-main-tab .accordion-section-title {
     background: #41d6cf;
     color: #fff;
@@ -206,4 +229,11 @@ li.invisible.kirki-sortable-item[data-value="blog_post"] i.dashicons.dashicons-v
     background: #41cbc4;
     box-shadow: 0 0 0 0.2rem rgba(50, 162, 168, 0.25);
     -webkit-box-shadow: 0 0 0 0.2rem rgba(50, 162, 168, 0.25);
+}
+
+/* Four-in-a-row size fields (padding, margin): WordPress 7 widened the input padding, which cut off values like "1.25rem". */
+#customize-theme-controls .customize-control-kirki-dimension.kirki-group-item .kirki-control-input {
+    padding-left: 4px;
+    padding-right: 4px;
+    text-align: center;
 }

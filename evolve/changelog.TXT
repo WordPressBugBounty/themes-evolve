@@ -1,6 +1,13 @@
 === Changelog ===
 
 
+Version  4.3.10
+Date:       26/11/26
+
+- Fixed: the Customizer panel list did not work correctly on WordPress 6.7 and newer
+- Fixed: values were cut off in the Customizer's four-in-a-row size fields (for example padding and margin)
+- Includes the security fix from 4.3.9
+
 Version  4.3.9
 Date:       26/11/26
 

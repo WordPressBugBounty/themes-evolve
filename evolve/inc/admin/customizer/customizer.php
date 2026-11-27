@@ -1184,17 +1184,10 @@ if ( ! function_exists( 'evolve_write_json_configs' ) ) {
 
 if ( ! function_exists( 'evolve_get_controls_from_json' ) ) {
 	function evolve_get_controls_from_json() {
-		global $evolve_store_customize_controls_array, $evolve_customizer_fields, $evolve_list_google_fonts, $wp_filesystem;
-		// Initialize the WP filesystem, no more using 'file-put-contents' function
-		if ( empty( $wp_filesystem ) ) {
-			require_once wp_normalize_path( ABSPATH . '/wp-admin/includes/file.php' );
-			WP_Filesystem();
-		}
-		$theme_path = str_replace( ABSPATH, $wp_filesystem->abspath(), EVOLVE_THEME_DIR );
-		ob_start();
-		$json_path = wp_normalize_path( $theme_path . '/customizer-controls.json' );
-		include $json_path;
-		$store_customize_controls = ob_get_clean();
+		global $evolve_store_customize_controls_array, $evolve_customizer_fields, $evolve_list_google_fonts;
+		// Read the file directly: this runs on every front-end request, where the WP filesystem may not be available.
+		$json_path                = wp_normalize_path( EVOLVE_THEME_DIR . '/customizer-controls.json' );
+		$store_customize_controls = is_readable( $json_path ) ? file_get_contents( $json_path ) : '';
 		//set json_decode(string, true) to get array not object
 		$evolve_store_customize_controls_array = json_decode( $store_customize_controls, true );
 		$evolve_customizer_fields              = $evolve_store_customize_controls_array['evolve_customizer_fields'];
